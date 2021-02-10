@@ -27,6 +27,7 @@
 	S["player_alt_titles"] >> pref.player_alt_titles
 	S["char_branch"]       >> pref.char_branch
 	S["char_rank"]         >> pref.char_rank
+	S["gender"] >> pref.gender
 
 /datum/category_item/player_setup_item/occupation/save_character(var/savefile/S)
 	S["alternate_option"]  << pref.alternate_option
@@ -36,6 +37,7 @@
 	S["player_alt_titles"] << pref.player_alt_titles
 	S["char_branch"]       << pref.char_branch
 	S["char_rank"]         << pref.char_rank
+	S["gender"] << pref.gender
 
 /datum/category_item/player_setup_item/occupation/sanitize_character()
 	if(!istype(pref.job_medium)) pref.job_medium = list()
@@ -137,7 +139,11 @@
 			if(!is_type_in_list(player_rank, job.allowed_ranks))
 				. += "<del><span class='job_class'>[rank]</span></del></td><td><a href='?src=\ref[src];show_ranks=[rank]'><b> \[NOT FOR [player_rank.name_short || player_rank.name]]</b></a></td></tr>"
 				continue
-
+//[downstream]
+		if(job.IsAvailableFor(pref.gender, pref.client?.ckey))
+			. += "<del><span class='job_class'>[rank]</span></del></td><td><b> \[GENDER RESTRICTED]</b></td></tr>"
+			continue
+//[/downstream]
 		if(("Assistant" in pref.job_low) && (rank != "Assistant"))
 			. += "<font color=black>[rank]</font></td><td></td></tr>"
 			continue

@@ -37,6 +37,8 @@
 
 	announced = FALSE
 
+	AllowedGenders = NOT_FEMALE //[downstream]
+
 	equip(var/mob/living/carbon/human/H)
 		var/current_name = H.real_name
 		..()
@@ -59,6 +61,8 @@
 
 	announced = FALSE
 
+
+
 	equip(var/mob/living/carbon/human/H)
 		var/current_name = H.real_name
 		..()
@@ -78,6 +82,8 @@
 	shotgun_skill = 10
 
 	announced = FALSE
+
+	AllowedGenders = NOT_FEMALE //[downstream]
 
 	equip(var/mob/living/carbon/human/H)
 		var/current_name = H.real_name
@@ -102,6 +108,8 @@
 
 	announced = FALSE
 
+	AllowedGenders = NOT_FEMALE //[downstream]
+
 	equip(var/mob/living/carbon/human/H)
 		var/current_name = H.real_name
 		..()
@@ -123,6 +131,8 @@
 	open_when_dead = TRUE
 
 	announced = FALSE
+
+	AllowedGenders = NOT_FEMALE //[downstream]
 
 	equip(var/mob/living/carbon/human/H)
 		var/current_name = H.real_name
@@ -166,6 +176,8 @@
 
 	announced = FALSE
 
+	AllowedGenders = NOT_FEMALE //[downstream]
+
 	equip(var/mob/living/carbon/human/H)
 		var/current_name = H.real_name
 		..()
@@ -207,6 +219,7 @@
 	smg_skill = 0
 
 	announced = FALSE
+
 
 	equip(mob/living/carbon/human/H)
 		var/current_name = H.real_name

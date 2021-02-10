@@ -212,7 +212,12 @@ GLOBAL_LIST_EMPTY(family_blacklist)
 	if(!is_species_allowed(S))
 		to_chat(feedback, "<span class='boldannounce'>Restricted species, [S], for [title].</span>")
 		return TRUE
-
+//[downstream]
+	var/g = prefs.gender
+	if(!IsAvailableFor(g, prefs?.client?.ckey))
+		to_chat(feedback, "<span class='boldannounce'>Restricted gender([g]) for [title].</span>")
+		return TRUE
+//[/downstream]
 	return FALSE
 
 /datum/job/proc/is_species_allowed(var/datum/species/S)
@@ -285,3 +290,11 @@ GLOBAL_LIST_EMPTY(family_blacklist)
 			continue
 		res += initial(R.name)
 	return english_list(res)
+
+//[downstream]
+/datum/job
+	var/list/AllowedGenders = ALL_GENDERS
+
+/datum/job/proc/IsAvailableFor(_gender, _ckey)
+	return AllowedGenders.Find(_gender) || check_ckey_whitelisted(_ckey)
+//[/downstream]

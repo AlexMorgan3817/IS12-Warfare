@@ -65,4 +65,57 @@
 	load_ckey_whitelist()
 	log_and_message_admins("[key_name(usr)] has reloaded the ckey whitelist.")
 
+//[downstream]
+/proc/SanitizeCkeyList(L)
+	for(var/k in L)
+		k = ckey(k)
+		if(!length(k))
+			L -= k
+	return L
+
+/proc/Add2CkeyWhitelist(_key)
+	_key = ckey(_key)
+	var/list/whitelist_file
+	if(fexists(CKEYWHITELIST))
+		whitelist_file = file2list(CKEYWHITELIST)
+	else
+		whitelist_file = list()
+	if(islist(whitelist_file) && !whitelist_file.Find(_key))
+		whitelist_file |= _key
+		if(fexists(CKEYWHITELIST))
+			fdel(CKEYWHITELIST)
+		text2file(jointext(SanitizeCkeyList(whitelist_file), "\n"), CKEYWHITELIST)
+		load_ckey_whitelist()
+		return TRUE
+
+/proc/RemoveCkeyFromWhiteList(_key)
+	_key = ckey(_key)
+	var/list/whitelist_file = file2list(CKEYWHITELIST)
+	if(length(whitelist_file) && whitelist_file.Find(_key))
+		whitelist_file -= _key
+		if(fexists(CKEYWHITELIST))
+			fdel(CKEYWHITELIST)
+		text2file(jointext(SanitizeCkeyList(whitelist_file), "\n"), CKEYWHITELIST)
+		load_ckey_whitelist()
+		return TRUE
+
+/client/proc/addckey2wl()
+	set category = "Server"
+	set name = "Whitelist: Add Ckey To Whitelist"
+	set desc = "Adds Ckey To ckey Whitelist."
+
+	var/_ckey = input("Input ckey to add", "Whilelist") as null|text
+	if(_ckey)
+		Add2CkeyWhitelist(_ckey)
+
+/client/proc/removeckeyfromwl()
+	set category = "Server"
+	set name = "Whitelist: Remove Ckey From Whitelist"
+	set desc = "Remove ckey from ckeywhitelist."
+
+	var/_ckey = input("Input ckey to remove", "Whilelist") in ckey_whitelist as null|text
+	if(_ckey)
+		RemoveCkeyFromWhiteList(_ckey)
+
+//[/downstream]
 #undef CKEYWHITELIST

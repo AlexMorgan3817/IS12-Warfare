@@ -307,3 +307,9 @@
 #define PUNCTUATION list("!", ".", "\"", ")", "'", ",", "?", ":", ";")
 
 #define CLIENT_FROM_VAR(I) (ismob(I) ? I:client : (istype(I, /client) ? I : (istype(I, /datum/mind) ? I:current?:client : null)))
+
+
+//[downstream]
+#define ALL_GENDERS list(NEUTER, MALE, FEMALE, PLURAL)
+#define NOT_FEMALE list(NEUTER, MALE, PLURAL)
+//[/downstream]

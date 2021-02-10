@@ -222,6 +222,10 @@ var/list/admin_verbs_possess = list(
 	)
 var/list/admin_verbs_permissions = list(
 	/client/proc/edit_admin_permissions
+//[downstream]
+	,/client/proc/addckey2wl
+	,/client/proc/removeckeyfromwl
+//[/downstream]
 	)
 var/list/admin_verbs_rejuv = list(
 	/client/proc/respawn_character
