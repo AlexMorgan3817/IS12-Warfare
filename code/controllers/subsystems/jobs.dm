@@ -502,7 +502,7 @@ SUBSYSTEM_DEF(jobs)
 					else permitted = 0
 
 				if(!permitted)
-					to_chat(H, "<span class='warning'>Your current job([job.type]) does not permit you to spawn with [thing]([json_encode(G.allowed_roles)])!</span>")
+					to_chat(H, "<span class='warning'>Your current job([job.title]) does not permit you to spawn with [thing]!</span>")
 					continue
 
 				if(!G.slot || G.slot == slot_tie || (G.slot in loadout_taken_slots) || !G.spawn_on_mob(H, H.client.prefs.Gear()[G.display_name]))
