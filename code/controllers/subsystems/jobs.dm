@@ -366,6 +366,7 @@ SUBSYSTEM_DEF(jobs)
 	if(!H)	return null
 
 	var/datum/job/job = GetJob(rank)
+	var/list/spawn_in_storage//[downstream]
 	if(job)
 
 		//Equip job items.
@@ -374,6 +375,7 @@ SUBSYSTEM_DEF(jobs)
 		job.apply_fingerprints(H)
 		H.staminaexhaust = 250 + endToStaminaModifier(H.my_stats[STAT(end)].level)
 
+		spawn_in_storage = equip_custom_loadout(H, job)//[downstream]
 	else
 		to_chat(H, "Your job is [rank] and the game just can't handle it! Please report this bug to an administrator.")
 
@@ -415,6 +417,8 @@ SUBSYSTEM_DEF(jobs)
 				return H.Robotize()
 			if("AI")
 				return H
+
+	if(spawn_in_storage) for(var/datum/gear/G in spawn_in_storage) G.spawn_in_storage_or_drop(H, H.client.prefs.Gear()[G.display_name])//[downstream]
 
 	if(istype(H)) //give humans wheelchairs, if they need them.
 		var/obj/item/organ/external/l_foot = H.get_organ(BP_L_FOOT)
@@ -479,6 +483,44 @@ SUBSYSTEM_DEF(jobs)
 	BITSET(H.hud_updateflag, IMPLOYAL_HUD)
 	BITSET(H.hud_updateflag, SPECIALROLE_HUD)
 	return H
+
+//[downstream]
+/datum/controller/subsystem/jobs/proc/equip_custom_loadout(var/mob/living/carbon/human/H, var/datum/job/job)
+
+	if(!H || !H.client) return
+
+	// Equip custom gear loadout, replacing any job items
+	var/list/spawn_in_storage = list()
+	var/list/loadout_taken_slots = list()
+	if(H.client.prefs.Gear() && job.loadout_allowed)
+		for(var/thing in H.client.prefs.Gear())
+			var/datum/gear/G = gear_datums[thing]
+			if(G)
+				var/permitted = 1
+				if(G.allowed_roles)
+					if(G.allowed_roles.Find(job.type)) permitted = 1
+					else permitted = 0
+
+				if(!permitted)
+					to_chat(H, "<span class='warning'>Your current job([job.type]) does not permit you to spawn with [thing]([json_encode(G.allowed_roles)])!</span>")
+					continue
+
+				if(!G.slot || G.slot == slot_tie || (G.slot in loadout_taken_slots) || !G.spawn_on_mob(H, H.client.prefs.Gear()[G.display_name]))
+					spawn_in_storage.Add(G)
+				else loadout_taken_slots.Add(G.slot)
+
+	// do accessories last so they don't attach to a suit that will be replaced
+	if(H.char_rank && H.char_rank.accessory)
+		for(var/accessory_path in H.char_rank.accessory)
+			var/list/accessory_data = H.char_rank.accessory[accessory_path]
+			if(islist(accessory_data))
+				var/amt = accessory_data[1]
+				var/list/accessory_args = accessory_data.Copy()
+				accessory_args[1] = src
+				for(var/i in 1 to amt) H.equip_to_slot_or_del(new accessory_path(arglist(accessory_args)), slot_tie)
+			else for(var/i in 1 to (isnull(accessory_data)? 1 : accessory_data)) H.equip_to_slot_or_del(new accessory_path(src), slot_tie)
+	return spawn_in_storage
+//[/downstream]
 
 /datum/controller/subsystem/jobs/proc/LoadJobs(jobsfile) //ran during round setup, reads info from jobs.txt -- Urist
 	if(!config.load_jobs_from_txt)

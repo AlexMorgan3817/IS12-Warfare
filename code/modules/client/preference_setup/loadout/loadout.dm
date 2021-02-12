@@ -1,6 +1,11 @@
 var/list/loadout_categories = list()
 var/list/gear_datums = list()
 
+/datum/category_group/player_setup_category/loadout_preferences
+	name = "Loadout"
+	sort_order = 6
+	category_item_type = /datum/category_item/player_setup_item/loadout
+
 /datum/preferences
 	var/list/gear_list //Custom/fluff item loadouts.
 	var/gear_slot = 1  //The current gear save slot
@@ -42,7 +47,7 @@ var/list/gear_datums = list()
 /datum/category_item/player_setup_item/loadout
 	name = "Loadout"
 	sort_order = 1
-	var/current_tab = "General"
+	var/current_tab = "Soldier"
 	var/hide_unavailable_gear = 0
 
 /datum/category_item/player_setup_item/loadout/load_character(var/savefile/S)
@@ -94,7 +99,7 @@ var/list/gear_datums = list()
 					gears -= gear_name
 				else
 					var/datum/gear/G = gear_datums[gear_name]
-					if(total_cost + G.cost > config.max_gear_cost)
+					if(total_cost + G.cost > pref.GetLoadoutPoints())
 						gears -= gear_name
 					else
 						total_cost += G.cost
@@ -117,8 +122,9 @@ var/list/gear_datums = list()
 	. += "<tr><td colspan=3><center>"
 	. += "<a href='?src=\ref[src];prev_slot=1'>\<\<</a><b><font color = '[fcolor]'>\[[pref.gear_slot]\]</font> </b><a href='?src=\ref[src];next_slot=1'>\>\></a>"
 
-	if(config.max_gear_cost < INFINITY)
-		. += "<b><font color = '[fcolor]'>[total_cost]/[config.max_gear_cost]</font> loadout points spent.</b>"
+	var/gPoints = pref.GetLoadoutPoints()
+	if(gPoints < INFINITY)
+		. += "<b><font color = '[fcolor]'>[total_cost]/[gPoints]</font> loadout points spent.</b>"
 
 	. += "<a href='?src=\ref[src];clear_loadout=1'>Clear Loadout</a>"
 	. += "<a href='?src=\ref[src];toggle_hiding=1'>[hide_unavailable_gear ? "Show all" : "Hide unavailable"]</a></center></td></tr>"
@@ -225,7 +231,7 @@ var/list/gear_datums = list()
 			for(var/gear_name in pref.gear_list[pref.gear_slot])
 				var/datum/gear/G = gear_datums[gear_name]
 				if(istype(G)) total_cost += G.cost
-			if((total_cost+TG.cost) <= config.max_gear_cost)
+			if((total_cost+TG.cost) <= pref.GetLoadoutPoints())
 				pref.gear_list[pref.gear_slot] += TG.display_name
 		return TOPIC_REFRESH_UPDATE_PREVIEW
 	if(href_list["gear"] && href_list["tweak"])
@@ -288,6 +294,7 @@ var/list/gear_datums = list()
 	var/description        //Description of this gear. If left blank will default to the description of the pathed item.
 	var/path               //Path to item.
 	var/cost = 1           //Number of points used. Items in general cost 1 point, storage/armor/gloves/special use costs 2 points.
+	var/special_cost = 0   //Special points giving by admins //[downstream]
 	var/slot               //Slot to equip to.
 	var/list/allowed_roles //Roles that can spawn with this item.
 	var/whitelisted        //Term to check the whitelist for..

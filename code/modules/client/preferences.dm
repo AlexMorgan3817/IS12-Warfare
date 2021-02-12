@@ -304,3 +304,8 @@ datum/preferences
 /datum/preferences/proc/close_load_dialog(mob/user)
 	user << browse(null, "window=saves")
 	panel.close()
+
+/datum/preferences
+	var/gear_points = 0					//given by admins
+/datum/preferences/proc/GetLoadoutPoints()
+	return gear_points || config.max_gear_cost

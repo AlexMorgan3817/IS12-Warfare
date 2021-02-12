@@ -14,6 +14,7 @@
 	S.cd = "/"
 
 	S["version"] >> savefile_version
+	from_file(S["gear_points"], gear_points)
 	player_setup.load_preferences(S)
 	loaded_preferences = S
 	return 1
@@ -25,6 +26,7 @@
 	S.cd = "/"
 
 	S["version"] << SAVEFILE_VERSION_MAX
+	to_file(S["gear_points"], gear_points)
 	player_setup.save_preferences(S)
 	loaded_preferences = S
 	return 1
