@@ -22,8 +22,12 @@ GLOBAL_LIST_EMPTY(CargoCategories)
 	var/datum/CargoCategory/SelectedCategory
 	var/Money = 0
 	var/list/AllowedCurrencies = list(/obj/item/stack/teeth = 20)
-	attackby(mob/user as mob)
+	attackby(obj/item/W, mob/user, click_params)
 		. = ..()
+		if(AllowedCurrencies.Find(W?.type))
+			if(user.unEquip(W))
+				Money += AllowedCurrencies[W.type]
+				qdel(W)
 
 	attack_hand(mob/user as mob)
 		. = ..()
