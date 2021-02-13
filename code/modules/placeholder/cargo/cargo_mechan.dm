@@ -58,24 +58,17 @@ GLOBAL_LIST_EMPTY(CargoCategories)
 		user << browse(dat, "window=[window_id];size=500x300")
 
 	OnTopic(user, href_list)
-		to_world("hr:[json_encode(href_list)]")
 		var/category_index = text2num(href_list["category"])
 		if(isnum(category_index) && length(GLOB.CargoCategories) >= category_index)
 			var/datum/CargoCategory/category2select = GLOB.CargoCategories[category_index]
-			to_world("C:[category2select]")
 			if(istype(category2select))
-				to_world("C:[category2select]")
 				SelectedCategory = category2select
 				. = TOPIC_REFRESH
-		to_world("CI:[category_index]")
 		if(istype(SelectedCategory))
 			var/good_index = text2num(href_list["buy"])
-			to_world("G:[good_index]")
 			if(isnum(good_index) && length(SelectedCategory.assortiment) >= good_index)
-				to_world("M:[Money]")
 				var/datum/CargoGood/good = SelectedCategory.assortiment[good_index]
 				if(istype(good) && Money >= good.Cost)
-					to_world("[Money]-[good.Cost]")
 					Buy(good)
 					. = TOPIC_REFRESH
 		if(. == TOPIC_REFRESH)
@@ -84,7 +77,6 @@ GLOBAL_LIST_EMPTY(CargoCategories)
 	proc/Buy(datum/CargoGood/good)
 		var/list/pad = pick(GetCargoPadsByFaction(faction))
 		if(istype(pad, /obj/structure/cargo_pad))
-			to_world("[good.Path]-[good.Cost]")
 			Money = max(Money - good.Cost, 0)
 			var/atom/movable/G = new good.Path(pad)
 			G.dropInto(pad)
