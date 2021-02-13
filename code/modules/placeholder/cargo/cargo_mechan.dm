@@ -3,17 +3,18 @@ GLOBAL_LIST_EMPTY(CargoCategories)
 
 #define TOPIC_HREF(title, href) "<a href='?src=\ref[src];[href]'>[title]</a>"
 
-/proc/Add2CargoPads(faction, pad)
+/proc/Add2CargoPads(faction as text, obj/structure/cargo_pad/pad)
 	if(!GLOB.cargo_pads.Find(faction))
 		GLOB.cargo_pads[faction] = list()
 	GLOB.cargo_pads[faction] += pad
+	pad.faction = faction
 
-/proc/RemoveFromCargoPads(faction, pad)
+/proc/RemoveFromCargoPads(faction as text, pad)
 	if(!GLOB.cargo_pads.Find(faction))
 		GLOB.cargo_pads[faction] = list()
 	GLOB.cargo_pads[faction] -= pad
 
-/proc/GetCargoPadsByFaction(faction)
+/proc/GetCargoPadsByFaction(faction as text)
 	if(GLOB.cargo_pads.Find(faction))
 		return GLOB.cargo_pads[faction]
 
@@ -21,13 +22,19 @@ GLOBAL_LIST_EMPTY(CargoCategories)
 	var/faction
 	var/datum/CargoCategory/SelectedCategory
 	var/Money = 0
-	var/list/AllowedCurrencies = list(/obj/item/stack/teeth = 20)
+	var/list/AllowedCurrencies = list(/obj/item/stack/teeth/human = 20)
 	attackby(obj/item/W, mob/user, click_params)
-		. = ..()
 		if(AllowedCurrencies.Find(W?.type))
 			if(user.unEquip(W))
-				Money += AllowedCurrencies[W.type]
+				var/cost = AllowedCurrencies[W.type]
+				if(isstack(W))
+					var/obj/item/stack/S = W
+					cost *= S.amount
+				Money += cost
 				qdel(W)
+				. = TRUE
+		if(!.)
+			. = ..()
 
 	attack_hand(mob/user as mob)
 		. = ..()
@@ -48,30 +55,40 @@ GLOBAL_LIST_EMPTY(CargoCategories)
 				dat += "<tr><th>[TOPIC_HREF("[good.Name]", "buy=[SelectedCategory.assortiment.Find(good)]")]<th>[good.Cost]"
 			dat += "</table>"
 
-		dat += "<hr>[TOPIC_HREF("Close", "mach_close=[window_id]")]"
 		user << browse(dat, "window=[window_id];size=500x300")
 
 	OnTopic(user, href_list)
+		to_world("hr:[json_encode(href_list)]")
 		var/category_index = text2num(href_list["category"])
 		if(isnum(category_index) && length(GLOB.CargoCategories) >= category_index)
 			var/datum/CargoCategory/category2select = GLOB.CargoCategories[category_index]
+			to_world("C:[category2select]")
 			if(istype(category2select))
+				to_world("C:[category2select]")
 				SelectedCategory = category2select
-				return TOPIC_HANDLED
+				. = TOPIC_REFRESH
+		to_world("CI:[category_index]")
 		if(istype(SelectedCategory))
 			var/good_index = text2num(href_list["buy"])
+			to_world("G:[good_index]")
 			if(isnum(good_index) && length(SelectedCategory.assortiment) >= good_index)
+				to_world("M:[Money]")
 				var/datum/CargoGood/good = SelectedCategory.assortiment[good_index]
 				if(istype(good) && Money >= good.Cost)
+					to_world("[Money]-[good.Cost]")
 					Buy(good)
-					return TOPIC_HANDLED
-		return TOPIC_REFRESH
+					. = TOPIC_REFRESH
+		if(. == TOPIC_REFRESH)
+			interact(usr)
 
 	proc/Buy(datum/CargoGood/good)
 		var/list/pad = pick(GetCargoPadsByFaction(faction))
-		if(istype(pad, /obj/effect/landmark/cargo))
+		if(istype(pad, /obj/structure/cargo_pad))
+			to_world("[good.Path]-[good.Cost]")
 			Money = max(Money - good.Cost, 0)
-			return new good.Path(get_turf(pad))
+			var/atom/movable/G = new good.Path(pad)
+			G.dropInto(pad)
+			return G
 
 /obj/machinery/kaos/cargo_machine/red
 	faction = "RED"
@@ -80,13 +97,16 @@ GLOBAL_LIST_EMPTY(CargoCategories)
 
 /obj/effect/landmark/cargo
 	var/faction
-	New()
-		. = ..()
+	Initialize()
 		var/obj/structure/cargo_pad = locate(/obj/structure/cargo_pad) in get_turf(src)
 		if(cargo_pad) Add2CargoPads(faction, cargo_pad)
-	Destroy()
 		. = ..()
-		
+
+/obj/structure/cargo_pad
+	var/faction
+	Destroy()
+		RemoveFromCargoPads(faction, src)
+		. = ..()
 
 /obj/effect/landmark/cargo/red/faction = "RED"
 /obj/effect/landmark/cargo/blue/faction = "BLUE"

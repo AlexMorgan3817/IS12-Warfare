@@ -113,7 +113,7 @@
 	set name = "Whitelist: Remove Ckey From Whitelist"
 	set desc = "Remove ckey from ckeywhitelist."
 
-	var/_ckey = input("Input ckey to remove", "Whilelist") in ckey_whitelist as null|text
+	var/_ckey = input("Input ckey to remove", "Whilelist") in ckey_whitelist
 	if(_ckey)
 		RemoveCkeyFromWhiteList(_ckey)
 
