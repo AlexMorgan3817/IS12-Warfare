@@ -28,7 +28,7 @@
 			/obj/item/gun/projectile/shotgun/doublebarrel,
 			"MS Doom",
 			100
-		),
+		)
 	)
 		
 

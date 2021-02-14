@@ -75,12 +75,10 @@ GLOBAL_LIST_EMPTY(CargoCategories)
 			interact(usr)
 
 	proc/Buy(datum/CargoGood/good)
-		var/list/pad = pick(GetCargoPadsByFaction(faction))
+		var/obj/structure/cargo_pad/pad = pick(GetCargoPadsByFaction(faction))
 		if(istype(pad, /obj/structure/cargo_pad))
 			Money = max(Money - good.Cost, 0)
-			var/atom/movable/G = new good.Path(pad)
-			G.dropInto(pad)
-			return G
+			return pad.SpawnPath(good.Path)
 
 /obj/machinery/kaos/cargo_machine/red
 	faction = "RED"
@@ -99,6 +97,10 @@ GLOBAL_LIST_EMPTY(CargoCategories)
 	Destroy()
 		RemoveFromCargoPads(faction, src)
 		. = ..()
+	proc/SpawnPath(path)
+		var/atom/movable/G = new path(src)
+		G.dropInto(src)
+		return G
 
 /obj/effect/landmark/cargo/red/faction = "RED"
 /obj/effect/landmark/cargo/blue/faction = "BLUE"
